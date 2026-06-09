@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduPortal — School Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────── */
+:root {
+  --bg:       #f5f7fa;
+  --white:    #ffffff;
+  --sidebar:  #1e2d40;
+  --accent:   #3b7dd8;
+  --accent2:  #e8f0fc;
+  --green:    #22a06b;
+  --red:      #e5484d;
+  --yellow:   #f59e0b;
+  --border:   #e2e8f0;
+  --text:     #1a202c;
+  --muted:    #718096;
+  --light:    #f0f4ff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── LOGIN ───────────────────────────────────────── */
+#loginScreen {
+  min-height: 100vh; display: flex;
+  background: linear-gradient(135deg, #e8f0fc 0%, #f5f7fa 60%);
+  align-items: center; justify-content: center;
+}
+.login-wrap {
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: var(--white); border-radius: 24px;
+  box-shadow: 0 8px 48px rgba(59,125,216,.13);
+  overflow: hidden; width: 820px; border: 1px solid var(--border);
+}
+.login-left {
+  background: var(--sidebar); padding: 52px 44px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.login-left .logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px; color: #fff; line-height: 1.1;
+}
+.login-left .logo span { color: #7eb3f5; }
+.login-left .tagline { color: #8baabb; font-size: 14px; margin-top: 10px; line-height: 1.7; }
+.login-left .pills { display: flex; flex-direction: column; gap: 10px; margin-top: 32px; }
+.pill { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #a8c4d8; }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.login-right { padding: 52px 44px; }
+.login-right h2 { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); margin-bottom: 4px; }
+.login-right p { color: var(--muted); font-size: 13px; margin-bottom: 30px; }
+.flbl { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; display: block; margin-bottom: 6px; }
+.finput {
+  width: 100%; padding: 11px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: 14px; margin-bottom: 16px;
+  outline: none; font-family: 'Inter', sans-serif; transition: border .2s;
+}
+.finput:focus { border-color: var(--accent); background: #fff; }
+.btn-login {
+  width: 100%; padding: 13px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .2s;
+}
+.btn-login:hover { opacity: .88; }
+.login-hint { color: var(--muted); font-size: 11px; text-align: center; margin-top: 12px; }
+@media(max-width:640px) { .login-wrap { grid-template-columns: 1fr; width: 95%; } .login-left { display: none; } }
+
+/* ── APP LAYOUT ──────────────────────────────────── */
+#app { display: none; }
+.layout { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ─────────────────────────────────────── */
+.sidebar {
+  width: 250px; background: var(--sidebar);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 20;
+}
+.sb-logo {
+  padding: 26px 22px; border-bottom: 1px solid #2a3d52;
+  font-family: 'DM Serif Display', serif; font-size: 22px; color: #fff;
+}
+.sb-logo span { color: #7eb3f5; }
+.sb-logo small { display: block; font-family: 'Inter', sans-serif; font-size: 11px; color: #5a7d99; margin-top: 2px; font-weight: 600; }
+.sb-nav { flex: 1; padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.sb-group { font-size: 10px; color: #3d5a70; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 14px 12px 6px; }
+.sb-btn {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  border-radius: 10px; border: none; background: none;
+  color: #8baabb; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all .18s; text-align: left; width: 100%;
+}
+.sb-btn .ic { font-size: 17px; width: 20px; text-align: center; }
+.sb-btn:hover { background: #2a3d52; color: #fff; }
+.sb-btn.active { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(59,125,216,.3); }
+.sb-bottom {
+  padding: 16px 14px; border-top: 1px solid #2a3d52;
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--accent); display: flex; align-items: center;
+  justify-content: center; font-weight: 800; color: #fff; font-size: 14px; flex-shrink: 0;
+}
+.sb-info .uname { font-size: 13px; font-weight: 700; color: #fff; }
+.sb-info .urole { font-size: 11px; color: #5a7d99; }
+.sb-logout {
+  margin-left: auto; background: none; border: none;
+  color: #5a7d99; cursor: pointer; font-size: 16px; transition: color .2s;
+}
+.sb-logout:hover { color: var(--red); }
+
+/* ── MAIN ────────────────────────────────────────── */
+.main-content { margin-left: 250px; flex: 1; }
+.topbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 8px rgba(0,0,0,.05);
+}
+.topbar .page-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text); }
+.topbar .date { font-size: 13px; color: var(--muted); }
+.inner { padding: 28px; }
+
+/* ── SECTIONS ────────────────────────────────────── */
+.section { display: none; animation: up .3s ease; }
+.section.active { display: block; }
+@keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── STAT CARDS ──────────────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; margin-bottom: 26px; }
+.s-card {
+  background: var(--white); border-radius: 14px; padding: 20px 22px;
+  border: 1px solid var(--border); display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.s-card .icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.s-card.blue .icon { background: #e8f0fc; }
+.s-card.green .icon { background: #d4f5e9; }
+.s-card.yellow .icon { background: #fef3c7; }
+.s-card.red .icon { background: #fde8e8; }
+.s-card .val { font-family: 'DM Serif Display', serif; font-size: 30px; line-height: 1; color: var(--text); }
+.s-card .lbl { font-size: 12px; color: var(--muted); margin-top: 3px; font-weight: 600; }
+
+/* ── CARD ────────────────────────────────────────── */
+.card {
+  background: var(--white); border-radius: 14px; padding: 22px;
+  border: 1px solid var(--border); margin-bottom: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.card-header h3 { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:760px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── TABLE ───────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { color: var(--muted); font-weight: 700; padding: 9px 14px; text-align: left; border-bottom: 2px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border: none; }
+tr:hover td { background: var(--light); }
+
+/* ── BADGE ───────────────────────────────────────── */
+.badge { padding: 3px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; white-space: nowrap; }
+.badge.ok   { background: #d4f5e9; color: var(--green); }
+.badge.warn { background: #fef3c7; color: var(--yellow); }
+.badge.err  { background: #fde8e8; color: var(--red); }
+.badge.info { background: #e8f0fc; color: var(--accent); }
+
+/* ── FORM ────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.fg { display: flex; flex-direction: column; }
+.fg .flbl { margin-bottom: 5px; }
+.fg .finput { margin-bottom: 0; }
+@media(max-width:560px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* ── BUTTONS ─────────────────────────────────────── */
+.btn { padding: 10px 20px; border-radius: 9px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s; }
+.btn-sm { padding: 5px 13px; font-size: 11px; border-radius: 7px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 700; transition: opacity .2s; }
+.btn:hover, .btn-sm:hover { opacity: .82; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger  { background: var(--red); color: #fff; }
+.btn-ghost   { background: var(--light); color: var(--accent); border: 1px solid var(--border); }
+
+/* ── SEARCH ──────────────────────────────────────── */
+.search-bar {
+  padding: 9px 14px; border-radius: 9px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 13px;
+  font-family: 'Inter', sans-serif; outline: none; min-width: 200px; transition: border .2s;
+}
+.search-bar:focus { border-color: var(--accent); background: #fff; }
+
+/* ── NOTICE BOARD ────────────────────────────────── */
+.notice-card {
+  background: var(--white); border-radius: 12px; padding: 16px 18px;
+  border-left: 4px solid var(--accent); margin-bottom: 12px;
+  border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.notice-card.urgent { border-left-color: var(--red); }
+.notice-card.general { border-left-color: var(--green); }
+.notice-card .n-title { font-weight: 700; font-size: 14px; }
+.notice-card .n-body  { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+.notice-card .n-meta  { font-size: 11px; color: #a0aec0; margin-top: 8px; }
+
+/* ── GRADE TABLE COLORS ──────────────────────────── */
+.grade-A { color: var(--green); font-weight: 800; }
+.grade-B { color: var(--accent); font-weight: 700; }
+.grade-C { color: var(--yellow); font-weight: 700; }
+.grade-D { color: var(--red); font-weight: 700; }
+
+/* ── ROLE PILL ───────────────────────────────────── */
+.rp { padding: 3px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.rp-admin   { background: #e8f0fc; color: var(--accent); }
+.rp-teacher { background: #d4f5e9; color: var(--green); }
+.rp-student { background: #fef3c7; color: var(--yellow); }
+
+/* ── AVATAR ──────────────────────────────────────── */
+.av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent2); display: inline-flex;
+  align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+}
+
+/* ── ATTENDANCE ──────────────────────────────────── */
+.att-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 10px; }
+.att-card {
+  background: var(--bg); border-radius: 10px; padding: 14px;
+  border: 1.5px solid var(--border); display: flex; align-items: center; gap: 12px;
+}
+.att-card .att-name { font-size: 13px; font-weight: 700; }
+.att-card .att-id   { font-size: 11px; color: var(--muted); }
+.att-toggle { margin-left: auto; }
+.toggle-btn {
+  width: 40px; height: 22px; border-radius: 11px; border: none;
+  background: var(--border); cursor: pointer; position: relative; transition: background .2s;
+}
+.toggle-btn.on { background: var(--green); }
+.toggle-btn::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle-btn.on::after { transform: translateX(18px); }
+
+/* ── PROGRESS BAR ────────────────────────────────── */
+.prog { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .4s; }
+
+/* ── SETTINGS ────────────────────────────────────── */
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.setting-row:last-child { border: none; }
+.setting-row .s-label { font-weight: 600; font-size: 14px; }
+.setting-row .s-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ── TOAST ───────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 22px; right: 22px;
+  padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 700;
+  display: none; z-index: 999; animation: up .3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15); font-family: 'Inter', sans-serif;
+}
+#toast.ok  { background: var(--green); color: #fff; }
+#toast.bad { background: var(--red);   color: #fff; }
+#toast.inf { background: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-left">
+      <div class="logo">Edu<span>Portal</span></div>
+      <div class="tagline">A complete school management solution for students, teachers, and administrators.</div>
+      <div class="pills">
+        <div class="pill"><div class="dot"></div>Student & Teacher Management</div>
+        <div class="pill"><div class="dot"></div>Grades & Results Tracking</div>
+        <div class="pill"><div class="dot"></div>Attendance Monitoring</div>
+        <div class="pill"><div class="dot"></div>Notice Board & Announcements</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <h2>Welcome Back</h2>
+      <p>Sign in to access your school portal</p>
+      <label class="flbl">Role</label>
+      <select class="finput" id="roleSelect">
+        <option value="admin">Admin</option>
+        <option value="teacher">Teacher</option>
+        <option value="student">Student</option>
+      </select>
+      <label class="flbl">Username</label>
+      <input class="finput" type="text" id="userInput" placeholder="Enter username">
+      <label class="flbl">Password</label>
+      <input class="finput" type="password" id="passInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+      <button class="btn-login" onclick="login()">Sign In →</button>
+      <p class="login-hint">Demo · Any credentials · Password: any</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ══════════════════════════════════════════ -->
+<div id="app">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-logo">Edu<span>Portal</span><small>School Management System</small></div>
+      <nav class="sb-nav" id="sideNav"></nav>
+      <div class="sb-bottom">
+        <div class="sb-avatar" id="sbAv">A</div>
+        <div class="sb-info">
+          <div class="uname" id="sbName">Admin</div>
+          <div class="urole" id="sbRole">Administrator</div>
+        </div>
+        <button class="sb-logout" onclick="logout()" title="Logout">⏻</button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-content">
+      <div class="topbar">
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="date" id="topDate"></div>
+      </div>
+      <div class="inner">
+
+        <!-- ─── DASHBOARD ───────────────────────────── -->
+        <div class="section" id="sec-dashboard">
+          <div class="stats">
+            <div class="s-card blue"><div class="icon">👨‍🎓</div><div><div class="val" id="dStudents">0</div><div class="lbl">Total Students</div></div></div>
+            <div class="s-card green"><div class="icon">👩‍🏫</div><div><div class="val" id="dTeachers">0</div><div class="lbl">Teachers</div></div></div>
+            <div class="s-card yellow"><div class="icon">📚</div><div><div class="val" id="dClasses">6</div><div class="lbl">Classes</div></div></div>
+            <div class="s-card red"><div class="icon">📢</div><div><div class="val" id="dNotices">0</div><div class="lbl">Notices</div></div></div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header"><h3>Recent Students</h3></div>
+              <div class="tbl-wrap">
+                <table><thead><tr><th>Name</th><th>Class</th><th>Status</th></tr></thead>
+                <tbody id="dashStudents"></tbody></table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Latest Notices</h3></div>
+              <div id="dashNotices"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Class Attendance Overview</h3></div>
+            <div id="attOverview" style="display:flex;flex-direction:column;gap:14px;"></div>
+          </div>
+        </div>
+
+        <!-- ─── STUDENTS ─────────────────────────────── -->
+        <div class="section" id="sec-students">
+          <div class="card">
+            <div class="card-header"><h3>Add New Student</h3></div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Full Name</label><input class="finput" type="text" id="sName" placeholder="e.g. John Mwamba"></div>
+              <div class="fg"><label class="flbl">Student ID</label><input class="finput" type="text" id="sId" placeholder="e.g. STU-2025-001"></div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Class</label>
+                <select class="finput" id="sClass">
+                  <option>Form 1A</option><option>Form 1B</option><option>Form 2A</option>
+                  <option>Form 2B</option><option>Form 3A</option><option>Form 4A</option>
+                </select>
+              </div>
+              <div class="fg"><label class="flbl">Gender</label>
+                <select class="finput" id="sGender"><option>Male</option><option>Female</option></select>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Parent/Guardian Name</label><input class="finput" type="text" id="sParent" placeholder="Parent name"></div>
+              <div class="fg"><label class="flbl">Phone Number</label><input class="finput" type="text" id="sPhone" placeholder="+255 700 000 000"></div>
+            </div>
+            <button class="btn btn-primary" onclick="addStudent()">+ Enroll Student</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>All Students</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input class="search-bar" placeholder="🔍 Search students..." oninput="renderStudents(this.value)">
+                <select class="search-bar" style="min-width:120px" onchange="filterStudentClass(this.value)">
+                  <option value="">All Classes</option>
+                  <option>Form 1A</option><option>Form 1B</option><option>Form 2A</option>
+                  <option>Form 2B</option><option>Form 3A</option><option>Form 4A</option>
+                </select>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Student</th><th>ID</th><th>Class</th><th>Gender</th><th>Parent</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+                <tbody id="studentsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── TEACHERS ─────────────────────────────── -->
+        <div class="section" id="sec-teachers">
+          <div class="card">
+            <div class="card-header"><h3>Add Teacher</h3></div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Full Name</label><input class="finput" type="text" id="tName" placeholder="e.g. Mrs. Amina Hassan"></div>
+              <div class="fg"><label class="flbl">Employee ID</label><input class="finput" type="text" id="tId" placeholder="e.g. TCH-001"></div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Subject</label><input class="finput" type="text" id="tSubject" placeholder="e.g. Mathematics"></div>
+              <div class="fg"><label class="flbl">Phone</label><input class="finput" type="text" id="tPhone" placeholder="+255 700 000 000"></div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Assigned Class</label>
+                <select class="finput" id="tClass">
+                  <option>Form 1A</option><option>Form 1B</option><option>Form 2A</option>
+                  <option>Form 2B</option><option>Form 3A</option><option>Form 4A</option>
+                </select>
+              </div>
+              <div class="fg"><label class="flbl">Qualification</label><input class="finput" type="text" id="tQual" placeholder="e.g. B.Ed Mathematics"></div>
+            </div>
+            <button class="btn btn-primary" onclick="addTeacher()">+ Add Teacher</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>All Teachers</h3>
+              <input class="search-bar" placeholder="🔍 Search teachers..." oninput="renderTeachers(this.value)">
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Teacher</th><th>ID</th><th>Subject</th><th>Class</th><th>Phone</th><th>Qualification</th><th>Status</th><th></th></tr></thead>
+                <tbody id="teachersTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── GRADES ────────────────────────────────── -->
+        <div class="section" id="sec-grades">
+          <div class="card">
+            <div class="card-header"><h3>Enter Grades</h3></div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Student</label>
+                <select class="finput" id="gStudent"></select>
+              </div>
+              <div class="fg"><label class="flbl">Subject</label>
+                <select class="finput" id="gSubject">
+                  <option>Mathematics</option><option>English</option><option>Kiswahili</option>
+                  <option>Science</option><option>History</option><option>Geography</option>
+                  <option>Civics</option><option>Biology</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Score (0–100)</label><input class="finput" type="number" id="gScore" min="0" max="100" placeholder="e.g. 85"></div>
+              <div class="fg"><label class="flbl">Term</label>
+                <select class="finput" id="gTerm">
+                  <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="addGrade()">Save Grade</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Grade Records</h3>
+              <input class="search-bar" placeholder="🔍 Search by student..." oninput="renderGrades(this.value)">
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Grade</th><th>Term</th><th>Remarks</th></tr></thead>
+                <tbody id="gradesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── ATTENDANCE ────────────────────────────── -->
+        <div class="section" id="sec-attendance">
+          <div class="card">
+            <div class="card-header">
+              <h3>Mark Attendance</h3>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <select class="search-bar" style="min-width:130px" id="attClass" onchange="renderAttCards()">
+                  <option>Form 1A</option><option>Form 1B</option><option>Form 2A</option>
+                  <option>Form 2B</option><option>Form 3A</option><option>Form 4A</option>
+                </select>
+                <input class="search-bar" type="date" id="attDate">
+                <button class="btn btn-success" onclick="saveAttendance()">✅ Save Attendance</button>
+              </div>
+            </div>
+            <div class="att-grid" id="attCards"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Attendance Log</h3></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Class</th><th>Present</th><th>Absent</th><th>Rate</th></tr></thead>
+                <tbody id="attLog"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── NOTICE BOARD ──────────────────────────── -->
+        <div class="section" id="sec-notices">
+          <div class="card" id="noticeFormCard">
+            <div class="card-header"><h3>Post New Notice</h3></div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Title</label><input class="finput" type="text" id="nTitle" placeholder="Notice title"></div>
+              <div class="fg"><label class="flbl">Type</label>
+                <select class="finput" id="nType">
+                  <option value="info">Information</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+            </div>
+            <div class="fg" style="margin-bottom:14px">
+              <label class="flbl">Message</label>
+              <textarea class="finput" id="nBody" rows="3" placeholder="Write notice content here..." style="resize:vertical;"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="addNotice()">📢 Post Notice</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>All Notices</h3></div>
+            <div id="noticeList"></div>
+          </div>
+        </div>
+
+        <!-- ─── SETTINGS ──────────────────────────────── -->
+        <div class="section" id="sec-settings">
+          <div class="card">
+            <div class="card-header"><h3>School Information</h3></div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">School Name</label><input class="finput" type="text" id="setSchool" value="Kariakoo Secondary School"></div>
+              <div class="fg"><label class="flbl">School Code</label><input class="finput" type="text" id="setCode" value="KSS-2025"></div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Location</label><input class="finput" type="text" id="setLoc" value="Dar es Salaam, Tanzania"></div>
+              <div class="fg"><label class="flbl">Phone</label><input class="finput" type="text" id="setPhone" value="+255 22 000 0000"></div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label class="flbl">Email</label><input class="finput" type="email" id="setEmail" value="info@kariakoo.edu.tz"></div>
+              <div class="fg"><label class="flbl">Academic Year</label><input class="finput" type="text" id="setYear" value="2025 / 2026"></div>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Preferences</h3></div>
+            <div class="setting-row">
+              <div><div class="s-label">Email Notifications</div><div class="s-desc">Receive alerts for new students and notices</div></div>
+              <span class="badge ok">Enabled</span>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Auto Attendance Reminder</div><div class="s-desc">Send daily reminder to teachers at 7:30 AM</div></div>
+              <span class="badge ok">Enabled</span>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Report Generation</div><div class="s-desc">Generate end-of-term reports automatically</div></div>
+              <span class="badge warn">Scheduled</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Developer Info</h3></div>
+            <div class="setting-row">
+              <div><div class="s-label">Developed By</div><div class="s-desc">Project Author</div></div>
+              <span style="font-weight:700;color:var(--accent)">Salimu Nelson</span>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Technology Stack</div><div class="s-desc">Languages used</div></div>
+              <span class="badge info">HTML · CSS · JavaScript</span>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Version</div><div class="s-desc">Current release</div></div>
+              <span class="badge ok">v1.0.0</span>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">GitHub</div><div class="s-desc">Source code repository</div></div>
+              <span style="font-weight:700;color:var(--accent)">github.com/salimu-nelson/eduportal</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.inner -->
+    </div><!-- /.main-content -->
+  </div><!-- /.layout -->
+</div><!-- /#app -->
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════
+let role = '', currentUser = '';
+
+let students = [
+  { id:'STU-001', name:'Amina Juma',    cls:'Form 2A', gender:'Female', parent:'Juma Hassan',   phone:'+255 712 111 111', status:'Active' },
+  { id:'STU-002', name:'Brian Mwamba',  cls:'Form 1A', gender:'Male',   parent:'Peter Mwamba',  phone:'+255 713 222 222', status:'Active' },
+  { id:'STU-003', name:'Catherine Osei',cls:'Form 3A', gender:'Female', parent:'Grace Osei',    phone:'+255 714 333 333', status:'Active' },
+  { id:'STU-004', name:'David Kimani',  cls:'Form 2B', gender:'Male',   parent:'James Kimani',  phone:'+255 715 444 444', status:'Active' },
+  { id:'STU-005', name:'Esther Diallo', cls:'Form 4A', gender:'Female', parent:'Moussa Diallo', phone:'+255 716 555 555', status:'Active' },
+];
+let nextStudId = 6;
+
+let teachers = [
+  { id:'TCH-001', name:'Mrs. Amina Hassan',   subject:'Mathematics', cls:'Form 2A', phone:'+255 720 001 001', qual:'B.Ed Mathematics',  status:'Active' },
+  { id:'TCH-002', name:'Mr. John Mollel',      subject:'English',     cls:'Form 1A', phone:'+255 720 002 002', qual:'B.A. English Lit.', status:'Active' },
+  { id:'TCH-003', name:'Ms. Fatuma Ally',      subject:'Biology',     cls:'Form 3A', phone:'+255 720 003 003', qual:'B.Sc. Biology',     status:'Active' },
+  { id:'TCH-004', name:'Mr. George Mwangi',   subject:'History',     cls:'Form 4A', phone:'+255 720 004 004', qual:'B.A. History',      status:'Active' },
+];
+let nextTchId = 5;
+
+let grades = [
+  { student:'Amina Juma',    cls:'Form 2A', subject:'Mathematics', score:88, term:'Term 1' },
+  { student:'Brian Mwamba',  cls:'Form 1A', subject:'English',     score:75, term:'Term 1' },
+  { student:'Catherine Osei',cls:'Form 3A', subject:'Biology',     score:92, term:'Term 1' },
+  { student:'David Kimani',  cls:'Form 2B', subject:'History',     score:61, term:'Term 1' },
+  { student:'Esther Diallo', cls:'Form 4A', subject:'Kiswahili',   score:55, term:'Term 1' },
+];
+
+let notices = [
+  { title:'End of Term Exams', body:'End of term examinations will begin on 15th July 2025. Students are advised to prepare well.', type:'urgent', date:'June 1, 2025', by:'Admin' },
+  { title:'Sports Day',        body:'Annual Sports Day is scheduled for 28th June 2025. All students must participate.',             type:'general',date:'May 28, 2025', by:'Admin' },
+  { title:'School Fees Reminder', body:'All students are reminded to clear school fees by end of June 2025.',                       type:'info',   date:'May 20, 2025', by:'Admin' },
+];
+
+let attLogs = [];
+let attState = {}; // { studentId: true/false }
+let classFilter = '';
+
+// ══════════════════════════════════════════════════
+//  NAV CONFIG
+// ══════════════════════════════════════════════════
+const navConfig = [
+  { id:'dashboard',  ic:'🏠', label:'Dashboard',    group:'Main' },
+  { id:'students',   ic:'👨‍🎓', label:'Students',     group:'Manage' },
+  { id:'teachers',   ic:'👩‍🏫', label:'Teachers',     group:'Manage' },
+  { id:'grades',     ic:'📝', label:'Grades',        group:'Manage' },
+  { id:'attendance', ic:'📅', label:'Attendance',    group:'Manage' },
+  { id:'notices',    ic:'📢', label:'Notice Board',  group:'Admin' },
+  { id:'settings',   ic:'⚙️', label:'Settings',      group:'Admin' },
+];
+
+const roleNav = {
+  admin:   ['dashboard','students','teachers','grades','attendance','notices','settings'],
+  teacher: ['dashboard','students','grades','attendance','notices'],
+  student: ['dashboard','grades','notices'],
+};
+
+// ══════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════
+function login() {
+  const user = document.getElementById('userInput').value.trim() || 'User';
+  const pass = document.getElementById('passInput').value;
+  if (!pass) { showToast('Enter your password', 'bad'); return; }
+  role = document.getElementById('roleSelect').value;
+  currentUser = user;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('sbAv').textContent   = user[0].toUpperCase();
+  document.getElementById('sbName').textContent = user;
+  document.getElementById('sbRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  buildNav();
+  showSection('dashboard');
+}
+
+function logout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('passInput').value = '';
+  document.getElementById('userInput').value = '';
+}
+
+// ══════════════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════════════
+function buildNav() {
+  const nav = document.getElementById('sideNav');
+  nav.innerHTML = '';
+  let lastGroup = '';
+  const allowed = roleNav[role] || [];
+  navConfig.filter(n => allowed.includes(n.id)).forEach(n => {
+    if (n.group !== lastGroup) {
+      const g = document.createElement('div');
+      g.className = 'sb-group'; g.textContent = n.group;
+      nav.appendChild(g); lastGroup = n.group;
+    }
+    const b = document.createElement('button');
+    b.className = 'sb-btn'; b.id = 'nav-' + n.id;
+    b.innerHTML = `<span class="ic">${n.ic}</span>${n.label}`;
+    b.onclick = () => showSection(n.id);
+    nav.appendChild(b);
+  });
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
+  const sec = document.getElementById('sec-' + id);
+  if (sec) sec.classList.add('active');
+  const btn = document.getElementById('nav-' + id);
+  if (btn) btn.classList.add('active');
+  document.getElementById('pageTitle').textContent = navConfig.find(n=>n.id===id)?.label || 'Dashboard';
+  const fn = { dashboard:renderDashboard, students:()=>renderStudents(''), teachers:()=>renderTeachers(''),
+    grades:()=>{ populateGradeDropdown(); renderGrades(''); }, attendance:renderAttCards,
+    notices:renderNotices, settings:()=>{} };
+  if (fn[id]) fn[id]();
+  // hide notice form for non-admin/teacher
+  if (id === 'notices') {
+    const nf = document.getElementById('noticeFormCard');
+    if (nf) nf.style.display = role === 'student' ? 'none' : 'block';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════
+function renderDashboard() {
+  document.getElementById('dStudents').textContent = students.length;
+  document.getElementById('dTeachers').textContent = teachers.length;
+  document.getElementById('dNotices').textContent  = notices.length;
+
+  // Recent students
+  document.getElementById('dashStudents').innerHTML = students.slice(0,5).map(s =>
+    `<tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="av">${s.name[0]}</div>${s.name}</div></td>
+     <td>${s.cls}</td><td><span class="badge ok">${s.status}</span></td></tr>`).join('');
+
+  // Latest notices
+  document.getElementById('dashNotices').innerHTML = notices.slice(0,3).map(n =>
+    `<div class="notice-card ${n.type}"><div class="n-title">${n.title}</div><div class="n-meta">${n.date}</div></div>`).join('');
+
+  // Attendance overview
+  const classes = ['Form 1A','Form 1B','Form 2A','Form 2B','Form 3A','Form 4A'];
+  document.getElementById('attOverview').innerHTML = classes.map(cls => {
+    const total = students.filter(s=>s.cls===cls).length;
+    const pct = total > 0 ? Math.floor(Math.random()*30 + 70) : 0;
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+        <span style="font-weight:600;">${cls}</span>
+        <span style="color:var(--muted)">${pct}% present · ${total} students</span>
+      </div>
+      <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${pct>=80?'var(--green)':pct>=60?'var(--yellow)':'var(--red)'}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  STUDENTS
+// ══════════════════════════════════════════════════
+function renderStudents(q, cls='') {
+  const f = (q||'').toLowerCase();
+  let list = students.filter(s => s.name.toLowerCase().includes(f) || s.id.toLowerCase().includes(f));
+  if (cls) list = list.filter(s => s.cls === cls);
+  document.getElementById('studentsTable').innerHTML = list.length ? list.map(s =>
+    `<tr>
+      <td><div style="display:flex;align-items:center;gap:9px;"><div class="av">${s.name[0]}</div><b>${s.name}</b></div></td>
+      <td>${s.id}</td><td>${s.cls}</td><td>${s.gender}</td>
+      <td>${s.parent}</td><td>${s.phone}</td>
+      <td><span class="badge ok">${s.status}</span></td>
+      <td>${role!=='student'?`<button class="btn-sm btn-danger" onclick="removeStudent('${s.id}')">Remove</button>`:'—'}</td>
+    </tr>`).join('')
+  : '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px;">No students found.</td></tr>';
+}
+
+function filterStudentClass(cls) { classFilter = cls; renderStudents(document.querySelector('#sec-students .search-bar')?.value||'', cls); }
+
+function addStudent() {
+  const name = document.getElementById('sName').value.trim();
+  const sid  = document.getElementById('sId').value.trim() || `STU-${String(nextStudId).padStart(3,'0')}`;
+  const cls  = document.getElementById('sClass').value;
+  const gender = document.getElementById('sGender').value;
+  const parent = document.getElementById('sParent').value.trim() || '—';
+  const phone  = document.getElementById('sPhone').value.trim() || '—';
+  if (!name) { showToast('Enter student name', 'bad'); return; }
+  students.push({ id:sid, name, cls, gender, parent, phone, status:'Active' });
+  nextStudId++;
+  ['sName','sId','sParent','sPhone'].forEach(i=>document.getElementById(i).value='');
+  renderStudents(''); showToast(`${name} enrolled successfully!`, 'ok');
+}
+
+function removeStudent(id) {
+  const s = students.find(x=>x.id===id);
+  if (!confirm(`Remove ${s?.name}?`)) return;
+  students = students.filter(x=>x.id!==id);
+  renderStudents(''); showToast('Student removed.', 'bad');
+}
+
+// ══════════════════════════════════════════════════
+//  TEACHERS
+// ══════════════════════════════════════════════════
+function renderTeachers(q) {
+  const f = (q||'').toLowerCase();
+  const list = teachers.filter(t => t.name.toLowerCase().includes(f) || t.subject.toLowerCase().includes(f));
+  document.getElementById('teachersTable').innerHTML = list.length ? list.map(t =>
+    `<tr>
+      <td><div style="display:flex;align-items:center;gap:9px;"><div class="av" style="background:#d4f5e9;color:var(--green)">${t.name[4]||t.name[0]}</div><b>${t.name}</b></div></td>
+      <td>${t.id}</td><td>${t.subject}</td><td>${t.cls}</td><td>${t.phone}</td><td>${t.qual}</td>
+      <td><span class="badge ok">${t.status}</span></td>
+      <td>${role==='admin'?`<button class="btn-sm btn-danger" onclick="removeTeacher('${t.id}')">Remove</button>`:'—'}</td>
+    </tr>`).join('')
+  : '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px;">No teachers found.</td></tr>';
+}
+
+function addTeacher() {
+  const name = document.getElementById('tName').value.trim();
+  const tid  = document.getElementById('tId').value.trim() || `TCH-${String(nextTchId).padStart(3,'0')}`;
+  const sub  = document.getElementById('tSubject').value.trim();
+  const cls  = document.getElementById('tClass').value;
+  const phone= document.getElementById('tPhone').value.trim() || '—';
+  const qual = document.getElementById('tQual').value.trim() || '—';
+  if (!name || !sub) { showToast('Fill in name and subject', 'bad'); return; }
+  teachers.push({ id:tid, name, subject:sub, cls, phone, qual, status:'Active' });
+  nextTchId++;
+  ['tName','tId','tSubject','tPhone','tQual'].forEach(i=>document.getElementById(i).value='');
+  renderTeachers(''); showToast(`${name} added!`, 'ok');
+}
+
+function removeTeacher(id) {
+  const t = teachers.find(x=>x.id===id);
+  if (!confirm(`Remove ${t?.name}?`)) return;
+  teachers = teachers.filter(x=>x.id!==id);
+  renderTeachers(''); showToast('Teacher removed.', 'bad');
+}
+
+// ══════════════════════════════════════════════════
+//  GRADES
+// ══════════════════════════════════════════════════
+function populateGradeDropdown() {
+  document.getElementById('gStudent').innerHTML = students.map(s =>
+    `<option value="${s.name}">${s.name} (${s.cls})</option>`).join('');
+}
+
+function gradeInfo(score) {
+  if (score >= 80) return { grade:'A', remarks:'Excellent',     cls:'grade-A' };
+  if (score >= 65) return { grade:'B', remarks:'Good',          cls:'grade-B' };
+  if (score >= 50) return { grade:'C', remarks:'Average',       cls:'grade-C' };
+  if (score >= 40) return { grade:'D', remarks:'Below Average', cls:'grade-D' };
+  return                  { grade:'F', remarks:'Fail',          cls:'grade-D' };
+}
+
+function renderGrades(q) {
+  const f = (q||'').toLowerCase();
+  const list = grades.filter(g => g.student.toLowerCase().includes(f) || g.subject.toLowerCase().includes(f));
+  document.getElementById('gradesTable').innerHTML = list.length ? list.map(g => {
+    const { grade, remarks, cls } = gradeInfo(g.score);
+    return `<tr>
+      <td><b>${g.student}</b></td><td>${g.cls}</td><td>${g.subject}</td>
+      <td><b>${g.score}/100</b></td>
+      <td><span class="${cls}">${grade}</span></td>
+      <td>${g.term}</td>
+      <td><span class="badge ${grade==='A'?'ok':grade==='F'?'err':'warn'}">${remarks}</span></td>
+    </tr>`;
+  }).join('')
+  : '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px;">No grade records found.</td></tr>';
+}
+
+function addGrade() {
+  const student = document.getElementById('gStudent').value;
+  const subject = document.getElementById('gSubject').value;
+  const score   = parseInt(document.getElementById('gScore').value);
+  const term    = document.getElementById('gTerm').value;
+  if (!student || isNaN(score) || score < 0 || score > 100) { showToast('Enter valid score (0–100)', 'bad'); return; }
+  const cls = students.find(s=>s.name===student)?.cls || '—';
+  grades.push({ student, cls, subject, score, term });
+  document.getElementById('gScore').value = '';
+  renderGrades(''); showToast('Grade saved!', 'ok');
+}
+
+// ══════════════════════════════════════════════════
+//  ATTENDANCE
+// ══════════════════════════════════════════════════
+function renderAttCards() {
+  const cls = document.getElementById('attClass').value;
+  const list = students.filter(s => s.cls === cls);
+  if (!document.getElementById('attDate').value) {
+    document.getElementById('attDate').value = new Date().toISOString().split('T')[0];
+  }
+  document.getElementById('attCards').innerHTML = list.length ? list.map(s =>
+    `<div class="att-card">
+      <div class="av">${s.name[0]}</div>
+      <div><div class="att-name">${s.name}</div><div class="att-id">${s.id}</div></div>
+      <div class="att-toggle">
+        <button class="toggle-btn ${attState[s.id]!==false?'on':''}" id="tog-${s.id}" onclick="toggleAtt('${s.id}')"></button>
+      </div>
+    </div>`).join('')
+  : '<p style="color:var(--muted);font-size:13px">No students in this class.</p>';
+}
+
+function toggleAtt(id) {
+  attState[id] = attState[id] === false ? true : false;
+  const btn = document.getElementById('tog-' + id);
+  if (btn) btn.classList.toggle('on', attState[id] !== false);
+}
+
+function saveAttendance() {
+  const cls  = document.getElementById('attClass').value;
+  const date = document.getElementById('attDate').value || new Date().toISOString().split('T')[0];
+  const list = students.filter(s => s.cls === cls);
+  const present = list.filter(s => attState[s.id] !== false).length;
+  const absent  = list.length - present;
+  const rate    = list.length ? Math.round(present/list.length*100) : 0;
+  attLogs.unshift({ date, cls, present, absent, rate });
+  document.getElementById('attLog').innerHTML = attLogs.map(a =>
+    `<tr><td>${a.date}</td><td>${a.cls}</td>
+     <td style="color:var(--green);font-weight:700">${a.present}</td>
+     <td style="color:var(--red);font-weight:700">${a.absent}</td>
+     <td><span class="badge ${a.rate>=80?'ok':a.rate>=60?'warn':'err'}">${a.rate}%</span></td></tr>`).join('');
+  showToast(`Attendance saved for ${cls}!`, 'ok');
+}
+
+// ══════════════════════════════════════════════════
+//  NOTICES
+// ══════════════════════════════════════════════════
+function renderNotices() {
+  document.getElementById('noticeList').innerHTML = notices.length ? notices.map((n,i) =>
+    `<div class="notice-card ${n.type}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div class="n-title">${n.title}</div>
+          <div class="n-body">${n.body}</div>
+          <div class="n-meta">📅 ${n.date} &nbsp;·&nbsp; Posted by ${n.by}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="badge ${n.type==='urgent'?'err':n.type==='general'?'ok':'info'}">${n.type}</span>
+          ${role!=='student'?`<button class="btn-sm btn-danger" onclick="removeNotice(${i})">×</button>`:''}
+        </div>
+      </div>
+    </div>`).join('')
+  : '<p style="color:var(--muted);font-size:13px">No notices posted yet.</p>';
+}
+
+function addNotice() {
+  const title = document.getElementById('nTitle').value.trim();
+  const body  = document.getElementById('nBody').value.trim();
+  const type  = document.getElementById('nType').value;
+  if (!title || !body) { showToast('Fill title and message', 'bad'); return; }
+  const date = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  notices.unshift({ title, body, type, date, by: currentUser || role });
+  document.getElementById('nTitle').value = '';
+  document.getElementById('nBody').value  = '';
+  renderNotices(); showToast('Notice posted!', 'ok');
+}
+
+function removeNotice(i) {
+  notices.splice(i, 1); renderNotices(); showToast('Notice removed.', 'bad');
+}
+
+// ══════════════════════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════════════════════
+function saveSettings() { showToast('Settings saved!', 'ok'); }
+
+// ══════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = type;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2800);
+}
+
+// Set today's date on attendance by default
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('attDate');
+  if (d) d.value = new Date().toISOString().split('T')[0];
+});
+</script>
+
+<!-- ── FOOTER NOTE ─────────────────────────────── -->
+<!--
+  EduPortal - School Management System
+  Developed by: Salimu Nelson
+  Technologies: HTML5, CSS3, JavaScript (Vanilla)
+  Year: 2025
+  GitHub: github.com/salimu-nelson/eduportal
+-->
+</body>
+</html>
